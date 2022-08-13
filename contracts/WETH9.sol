@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import './SignatureChecker.sol';
-
 pragma solidity >=0.4.22 <0.6;
 
 contract WETH9 {
@@ -31,8 +29,8 @@ contract WETH9 {
     mapping (address => mapping (address => uint)) public allowance;
 
     bytes32 private DOMAIN_SEPARATOR;
-    // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
-    bytes32 private constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
+    bytes32 private constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9; // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes4 private constant MAGICVALUE = 0x1626ba7e; // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     mapping(address => uint) public nonces;
 
     constructor() public {
@@ -117,6 +115,48 @@ contract WETH9 {
         _approve(owner, spender, value);
     }
 
+    function _recover(bytes32 hash, bytes memory signature) private pure returns (address) {
+        if (signature.length != 65) {
+            return address(0);
+        }
+
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+
+        assembly {
+            r := mload(add(signature, 0x20))
+            s := mload(add(signature, 0x40))
+            v := byte(0, mload(add(signature, 0x60)))
+        }
+
+        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+            return address(0);
+        }
+
+        if (v != 27 && v != 28) {
+            return address(0);
+        }
+
+        return ecrecover(hash, v, r, s);
+    }
+
+    function _checkSignature(address signer, bytes32 hash, bytes memory signature) private view returns (bool) {
+        (address recovered) = _recover(hash, signature);
+        if (recovered != address(0) && recovered == signer) {
+            return true;
+        }
+
+        (bool success, bytes memory result) = signer.staticcall(
+            abi.encodeWithSelector(MAGICVALUE, hash, signature)
+        );
+        return (
+            success &&
+            result.length == 32 &&
+            abi.decode(result, (bytes32)) == bytes32(MAGICVALUE)
+        );
+    }
+
     function permit2(address owner, address spender, uint value, uint deadline, bytes calldata signature) external {
         require(deadline >= block.timestamp);
         bytes32 hash = keccak256(
@@ -126,7 +166,7 @@ contract WETH9 {
                 keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
             )
         );
-        require(SignatureChecker.checkSignature(owner, hash, signature));
+        require(_checkSignature(owner, hash, signature));
         _approve(owner, spender, value);
     }
 }
