@@ -36,10 +36,6 @@ contract WETH9 {
     mapping(address => uint) public nonces;
 
     constructor() public {
-        uint256 id;
-        assembly {
-            id := chainid()
-        }
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
@@ -48,7 +44,7 @@ contract WETH9 {
                 0x1c3e8a2387da36e303be346ec5bfadc2d93e4122713077a81734cff5587b06da,
                 // keccak256(bytes('1')),
                 0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6,
-                id,
+                280,
                 address(this)
             )
         );
