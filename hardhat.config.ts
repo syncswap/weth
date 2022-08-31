@@ -10,7 +10,7 @@ module.exports = {
     version: "latest",
     compilerSource: "binary",
     settings: {
-      compilerPath: "./zksolc-linux-amd64-musl-v1.1.3",
+      compilerPath: "./zksolc-linux-amd64-musl-v1.1.5",
     },
   },
 
