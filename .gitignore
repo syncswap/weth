@@ -4,11 +4,11 @@ node_modules/
 # build binaries
 artifacts/
 artifacts-zk/
-artifacts-normal/
+artifacts-backup/
 
 cache/
 cache-zk/
-cache-normal/
+cache-backup/
 
 bin/
 
@@ -20,12 +20,6 @@ secrets.json
 
 # logs
 yarn-error.log
-
-# workspace
-misc/
-deploy/
-deploy-zksync.sh
-contracts/test/
 
 # zksolc
 zksolc*

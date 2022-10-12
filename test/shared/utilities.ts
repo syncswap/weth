@@ -1,4 +1,5 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types';
 import { BigNumber, Contract, ethers, Signature } from 'ethers';
 import {
   getAddress,
@@ -6,8 +7,11 @@ import {
   solidityPack,
   splitSignature
 } from 'ethers/lib/utils';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
-const hre = require("hardhat");
+const hre: HardhatRuntimeEnvironment & {
+  ethers: HardhatEthersHelpers
+} = require('hardhat');
 
 const DECIMALS_BASE_18 = BigNumber.from(10).pow(18);
 
@@ -48,9 +52,9 @@ export async function getPermitSignature(
   deadline: BigNumber
 ): Promise<string> {
   const domain = {
-    name: 'Wrapped Ether',
+    name: 'WETH9',
     version: '1',
-    chainId: 280,
+    chainId: hre.ethers.provider.network.chainId,
     verifyingContract: token.address
   };
   const types = {

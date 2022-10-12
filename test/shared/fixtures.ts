@@ -9,3 +9,10 @@ export async function deployWETH9(): Promise<Contract> {
   await contract.deployed();
   return contract;
 }
+
+export async function deployERC1271Mock(): Promise<Contract> {
+  const contractFactory = await ethers.getContractFactory('ERC1271Mock');
+  const contract = await contractFactory.deploy();
+  await contract.deployed();
+  return contract;
+}

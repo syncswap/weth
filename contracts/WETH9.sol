@@ -28,12 +28,16 @@ contract WETH9 {
     mapping (address => uint) public balanceOf;
     mapping (address => mapping (address => uint)) public allowance;
 
-    bytes32 private DOMAIN_SEPARATOR;
+    bytes32 public DOMAIN_SEPARATOR;
     bytes32 private constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9; // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes4 private constant MAGICVALUE = 0x1626ba7e; // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     mapping(address => uint) public nonces;
 
     constructor() public {
+        uint chainId;
+        assembly {
+            chainId := chainid()
+        }
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
@@ -42,29 +46,37 @@ contract WETH9 {
                 0x1c3e8a2387da36e303be346ec5bfadc2d93e4122713077a81734cff5587b06da,
                 // keccak256(bytes('1')),
                 0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6,
-                280,
+                chainId,
                 address(this)
             )
         );
     }
 
     function() external payable {
-        deposit();
+        depositTo(msg.sender);
     }
 
-    function deposit() public payable {
-        balanceOf[msg.sender] += msg.value;
-        emit Deposit(msg.sender, msg.value);
+    function deposit() external payable {
+        depositTo(msg.sender);
     }
 
-    function withdraw(uint wad) public {
+    function depositTo(address dst) public payable {
+        balanceOf[dst] += msg.value;
+        emit Deposit(dst, msg.value);
+    }
+
+    function withdraw(uint wad) external {
+        withdrawTo(msg.sender, wad);
+    }
+
+    function withdrawTo(address payable dst, uint wad) public {
         require(balanceOf[msg.sender] >= wad);
         balanceOf[msg.sender] -= wad;
-        msg.sender.transfer(wad);
+        dst.transfer(wad);
         emit Withdrawal(msg.sender, wad);
     }
 
-    function totalSupply() public view returns (uint) {
+    function totalSupply() external view returns (uint) {
         return address(this).balance;
     }
 
@@ -73,12 +85,12 @@ contract WETH9 {
         emit Approval(owner, spender, value);
     }
 
-    function approve(address spender, uint value) public returns (bool) {
+    function approve(address spender, uint value) external returns (bool) {
         _approve(msg.sender, spender, value);
         return true;
     }
 
-    function transfer(address dst, uint wad) public returns (bool) {
+    function transfer(address dst, uint wad) external returns (bool) {
         return transferFrom(msg.sender, dst, wad);
     }
 
@@ -130,7 +142,7 @@ contract WETH9 {
             v := byte(0, mload(add(signature, 0x60)))
         }
 
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+        if (uint(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
             return address(0);
         }
 
