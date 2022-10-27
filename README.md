@@ -5,8 +5,6 @@ The "Wrapped Ether" WETH-9 with additional features through relatively minor cha
 ## Features
 - Supports [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612) signed approvals.
 - Supports [EIP-1271](https://eips.ethereum.org/EIPS/eip-1271)  contract signature verification.
-- Supports deposit to the recipient.
-- Supports withdrawal to the recipient.
 
 ## Build
 ```
@@ -20,8 +18,6 @@ This repo is designed for zkSync 2.0 (testnet). To build artifacts for zkSync, r
 - Added `DOMAIN_SEPARATOR.`
 - Added `permit` function.
 - Added `permit2` function.
-- Added `depositTo` function.
-- Added `withdrawTo` function.
 
 ## Resources
 - [WETH9](https://github.com/gnosis/canonical-weth/blob/master/contracts/WETH9.sol)

@@ -53,26 +53,18 @@ contract WETH9 {
     }
 
     function() external payable {
-        depositTo(msg.sender);
+        deposit();
     }
 
-    function deposit() external payable {
-        depositTo(msg.sender);
-    }
-
-    function depositTo(address dst) public payable {
-        balanceOf[dst] += msg.value;
-        emit Deposit(dst, msg.value);
+    function deposit() public payable {
+        balanceOf[msg.sender] += msg.value;
+        emit Deposit(msg.sender, msg.value);
     }
 
     function withdraw(uint wad) external {
-        withdrawTo(msg.sender, wad);
-    }
-
-    function withdrawTo(address payable dst, uint wad) public {
         require(balanceOf[msg.sender] >= wad);
         balanceOf[msg.sender] -= wad;
-        dst.transfer(wad);
+        msg.sender.transfer(wad);
         emit Withdrawal(msg.sender, wad);
     }
 
