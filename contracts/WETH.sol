@@ -13,9 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity >=0.4.22 <0.6;
+pragma solidity ^0.8.0;
 
-contract WETH9 {
+error WETH_ETHTransferFailed();
+error WETH_InvalidSignature();
+error WETH_ExpiredSignature();
+error WETH_InvalidTransferRecipient();
+
+contract WETH {
     string public constant name = "Wrapped Ether";
     string public constant symbol = "WETH";
     uint8 public decimals = 18;
@@ -33,7 +38,7 @@ contract WETH9 {
     bytes4 private constant MAGICVALUE = 0x1626ba7e; // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     mapping(address => uint) public nonces;
 
-    constructor() public {
+    constructor() {
         uint chainId;
         assembly {
             chainId := chainid()
@@ -42,8 +47,8 @@ contract WETH9 {
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
-                // keccak256(bytes('WETH9')),
-                0x1c3e8a2387da36e303be346ec5bfadc2d93e4122713077a81734cff5587b06da,
+                // keccak256(bytes('Wrapped Ether')),
+                0x00cd3d46df44f2cbb950cf84eb2e92aa2ddd23195b1a009173ea59a063357ed3,
                 // keccak256(bytes('1')),
                 0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6,
                 chainId,
@@ -52,7 +57,7 @@ contract WETH9 {
         );
     }
 
-    function() external payable {
+    receive() external payable {
         deposit();
     }
 
@@ -62,9 +67,11 @@ contract WETH9 {
     }
 
     function withdraw(uint wad) external {
-        require(balanceOf[msg.sender] >= wad);
         balanceOf[msg.sender] -= wad;
-        msg.sender.transfer(wad);
+        (bool success, ) = msg.sender.call{value: wad}("");
+        if (!success) {
+            revert WETH_ETHTransferFailed();
+        }
         emit Withdrawal(msg.sender, wad);
     }
 
@@ -72,14 +79,14 @@ contract WETH9 {
         return address(this).balance;
     }
 
-    function _approve(address owner, address spender, uint value) private {
-        allowance[owner][spender] = value;
-        emit Approval(owner, spender, value);
-    }
-
     function approve(address spender, uint value) external returns (bool) {
         _approve(msg.sender, spender, value);
         return true;
+    }
+
+    function _approve(address owner, address spender, uint value) private {
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
 
     function transfer(address dst, uint wad) external returns (bool) {
@@ -87,13 +94,14 @@ contract WETH9 {
     }
 
     function transferFrom(address src, address dst, uint wad) public returns (bool) {
-        require(dst != address(this));
-        require(balanceOf[src] >= wad);
+        // Prevents from sending WETH tokens to the contract.
+        if (dst == address(0)) {
+            revert WETH_InvalidTransferRecipient();
+        }
 
         if (src != msg.sender) {
             uint _allowance = allowance[src][msg.sender];
-            if (_allowance != uint(-1)) {
-                require(_allowance >= wad);
+            if (_allowance != type(uint).max) {
                 allowance[src][msg.sender] -= wad;
             }
         }
@@ -105,18 +113,50 @@ contract WETH9 {
         return true;
     }
 
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-        require(deadline >= block.timestamp);
-        bytes32 hash = keccak256(
+    function _permit(address owner, address spender, uint value, uint deadline) private returns (bytes32 digest) {
+        if (block.timestamp > deadline) {
+            revert WETH_ExpiredSignature();
+        }
+        digest = keccak256(
             abi.encodePacked(
                 '\x19\x01',
                 DOMAIN_SEPARATOR,
                 keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
             )
         );
-        address recoveredAddress = ecrecover(hash, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner);
+    }
+
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 digest = _permit(owner, spender, value, deadline);
+        address recoveredAddress = ecrecover(digest, v, r, s);
+        if (recoveredAddress != owner || recoveredAddress == address(0)) {
+            revert WETH_InvalidSignature();
+        }
         _approve(owner, spender, value);
+    }
+
+    function permit2(address owner, address spender, uint value, uint deadline, bytes calldata signature) external {
+        bytes32 digest = _permit(owner, spender, value, deadline);
+        if (!_checkSignature(owner, digest, signature)) {
+            revert WETH_InvalidSignature();
+        }
+        _approve(owner, spender, value);
+    }
+
+    function _checkSignature(address signer, bytes32 hash, bytes memory signature) private view returns (bool) {
+        (address recoveredAddress) = _recover(hash, signature);
+        if (recoveredAddress == signer && recoveredAddress != address(0)) {
+            return true;
+        }
+
+        (bool success, bytes memory result) = signer.staticcall(
+            abi.encodeWithSelector(MAGICVALUE, hash, signature)
+        );
+        return (
+            success &&
+            result.length == 32 &&
+            abi.decode(result, (bytes32)) == bytes32(MAGICVALUE)
+        );
     }
 
     function _recover(bytes32 hash, bytes memory signature) private pure returns (address) {
@@ -143,34 +183,5 @@ contract WETH9 {
         }
 
         return ecrecover(hash, v, r, s);
-    }
-
-    function _checkSignature(address signer, bytes32 hash, bytes memory signature) private view returns (bool) {
-        (address recovered) = _recover(hash, signature);
-        if (recovered != address(0) && recovered == signer) {
-            return true;
-        }
-
-        (bool success, bytes memory result) = signer.staticcall(
-            abi.encodeWithSelector(MAGICVALUE, hash, signature)
-        );
-        return (
-            success &&
-            result.length == 32 &&
-            abi.decode(result, (bytes32)) == bytes32(MAGICVALUE)
-        );
-    }
-
-    function permit2(address owner, address spender, uint value, uint deadline, bytes calldata signature) external {
-        require(deadline >= block.timestamp);
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                '\x19\x01',
-                DOMAIN_SEPARATOR,
-                keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
-            )
-        );
-        require(_checkSignature(owner, hash, signature));
-        _approve(owner, spender, value);
     }
 }

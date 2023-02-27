@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity >=0.4.22 <0.6;
+pragma solidity ^0.8.0;
 
 contract ERC1271Mock {
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")

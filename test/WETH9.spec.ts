@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle'
 import { expandTo18Decimals, getPermitSignature, getSplittedPermitSignature, MAX_UINT256, ZERO } from './shared/utilities'
 import { defaultAbiCoder, keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { deployERC1271Mock, deployWETH9 } from './shared/fixtures'
+import { deployERC1271Mock, deployWETH } from './shared/fixtures'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types'
 
@@ -33,7 +33,7 @@ describe('WETH9.1', () => {
     let weth: Contract;
 
     beforeEach(async () => {
-        weth = await deployWETH9();
+        weth = await deployWETH();
     })
 
     it('name, symbol, decimals', async () => {
@@ -52,7 +52,7 @@ describe('WETH9.1', () => {
                     keccak256(
                         toUtf8Bytes('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                     ),
-                    keccak256(toUtf8Bytes('WETH9')),
+                    keccak256(toUtf8Bytes('Wrapped Ether')),
                     keccak256(toUtf8Bytes('1')),
                     chainId,
                     weth.address
@@ -148,7 +148,7 @@ describe('WETH9.1', () => {
     it('deposit:gas', async () => {
         const transaction = await weth.deposit({ value: TEST_AMOUNT });
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(44866);
+        expect(receipt.gasUsed).to.eq(44929);
     });
 
     it('deposit:fallback:gas', async () => {
@@ -157,7 +157,7 @@ describe('WETH9.1', () => {
             value: TEST_AMOUNT,
         });
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(44702);
+        expect(receipt.gasUsed).to.eq(44780);
     });
 
     it('withdraw', async () => {
@@ -175,49 +175,20 @@ describe('WETH9.1', () => {
         expect(await weth.balanceOf(wallet.address)).to.eq(TEST_AMOUNT.sub(TEST_AMOUNT2));
     });
 
-    /*
-    it('withdrawTo', async () => {
-        await weth.deposit({ value: TEST_AMOUNT });
-
-        const balanceBefore = await provider.getBalance(wallet.address);
-        const balanceBeforeOther = await provider.getBalance(other.address);
-
-        await expect(weth.withdrawTo(other.address, TEST_AMOUNT.add(1))).to.be.reverted;
-        await expect(weth.withdrawTo(other.address, TEST_AMOUNT2))
-            .to.emit(weth, 'Withdrawal')
-            .withArgs(wallet.address, TEST_AMOUNT2);
-
-        expect(await provider.getBalance(wallet.address)).to.eq(balanceBefore);
-        expect(await provider.getBalance(other.address)).to.eq(balanceBeforeOther.add(TEST_AMOUNT2));
-        expect(await weth.totalSupply()).to.eq(TEST_AMOUNT.sub(TEST_AMOUNT2));
-        expect(await weth.balanceOf(wallet.address)).to.eq(TEST_AMOUNT.sub(TEST_AMOUNT2));
-    });
-    */
-
     it('withdraw:gas', async () => {
         await weth.deposit({ value: TEST_AMOUNT });
 
         const transaction = await weth.withdraw(TEST_AMOUNT2);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(35128);
+        expect(receipt.gasUsed).to.eq(35071);
     });
-
-    /*
-    it('withdrawTo:gas', async () => {
-        await weth.deposit({ value: TEST_AMOUNT });
-
-        const transaction = await weth.withdrawTo(other.address, TEST_AMOUNT2);
-        const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(38051);
-    });
-    */
 
     it('withdraw:all:gas', async () => {
         await weth.deposit({ value: TEST_AMOUNT });
 
         const transaction = await weth.withdraw(TEST_AMOUNT);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(30328);
+        expect(receipt.gasUsed).to.eq(30271);
     });
 
     it('transfer', async () => {
@@ -240,7 +211,7 @@ describe('WETH9.1', () => {
 
         const transaction = await weth.transfer(other.address, TEST_AMOUNT2);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(51342);
+        expect(receipt.gasUsed).to.eq(51429);
     });
 
     it('transferFrom', async () => {
@@ -268,13 +239,13 @@ describe('WETH9.1', () => {
 
         let transaction = await weth.connect(other).transferFrom(wallet.address, other.address, TEST_AMOUNT2);
         let receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(52355);
+        expect(receipt.gasUsed).to.eq(52555);
 
         // approve max
         await weth.approve(other.address, MAX_UINT256);
         transaction = await weth.connect(other).transferFrom(wallet.address, other.address, TEST_AMOUNT2);
         receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(36865);
+        expect(receipt.gasUsed).to.eq(37014);
     });
 
     it('approve', async () => {
@@ -321,7 +292,7 @@ describe('WETH9.1', () => {
     it('approve:gas', async () => {
         const transaction = await weth.approve(other.address, 10000);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(46026);
+        expect(receipt.gasUsed).to.eq(46133);
     });
 
     it('permit', async () => {
@@ -372,7 +343,7 @@ describe('WETH9.1', () => {
             wallet.address, other.address, TEST_AMOUNT2, deadline, digest.v, digest.r, digest.s
         );
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(76378);
+        expect(receipt.gasUsed).to.eq(76735);
     });
 
     it('permit2', async () => {
@@ -444,6 +415,6 @@ describe('WETH9.1', () => {
             wallet.address, other.address, TEST_AMOUNT2, deadline, digest
         );
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(77238);
+        expect(receipt.gasUsed).to.eq(77534);
     });
 })

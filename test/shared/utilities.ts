@@ -52,7 +52,7 @@ export async function getPermitSignature(
   deadline: BigNumber
 ): Promise<string> {
   const domain = {
-    name: 'WETH9',
+    name: 'Wrapped Ether',
     version: '1',
     chainId: hre.ethers.provider.network.chainId,
     verifyingContract: token.address

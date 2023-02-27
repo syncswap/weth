@@ -1,7 +1,6 @@
 require("@matterlabs/hardhat-zksync-deploy");
 require("@matterlabs/hardhat-zksync-solc");
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-ethers");
 
 module.exports = {
   // hardhat-zksync-solc
@@ -10,7 +9,7 @@ module.exports = {
     version: "latest",
     compilerSource: "binary",
     settings: {
-      compilerPath: "./zksolc-linux-amd64-musl-v1.2.0",
+      compilerPath: "./zksolc-linux-amd64-musl-v1.3.5",
     },
   },
 
@@ -24,7 +23,7 @@ module.exports = {
 
   // The compiler configuration for normal artifacts.
   solidity: {
-    version: "0.5.17",
+    version: "0.8.15",
     settings: {
       optimizer: {
         enabled: true,
@@ -52,10 +51,15 @@ module.exports = {
       initialBaseFeePerGas: 0
     },
 
+    goerli: {
+      url: "https://rpc.ankr.com/eth_goerli"
+    },
+
     // Run compile task with this network to generate `artifacts-zk` and `cache-zk`.
     // Example: `yarn hardhat compile --network zksync`
-    zksync: {
+    zkTestnet: {
       zksync: true,
+      ethNetwork: "goerli",
       url: 'https://zksync2-testnet.zksync.dev',
       chainId: 280
     },
