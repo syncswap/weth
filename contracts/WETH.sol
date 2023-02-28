@@ -119,10 +119,19 @@ contract WETH is IWETH {
     }
 
     function transfer(address to, uint value) external override returns (bool) {
-        return transferFrom(msg.sender, to, value);
+        // Prevents from sending WETH tokens to the contract.
+        if (to == address(0)) {
+            revert WETH_InvalidTransferRecipient();
+        }
+
+        balanceOf[msg.sender] -= value;
+        balanceOf[to] += value;
+
+        emit Transfer(msg.sender, to, value);
+        return true;
     }
 
-    function transferFrom(address from, address to, uint value) public override returns (bool) {
+    function transferFrom(address from, address to, uint value) external override returns (bool) {
         // Prevents from sending WETH tokens to the contract.
         if (to == address(0)) {
             revert WETH_InvalidTransferRecipient();

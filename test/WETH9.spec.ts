@@ -211,7 +211,7 @@ describe('WETH9.1', () => {
 
         const transaction = await weth.transfer(other.address, TEST_AMOUNT2);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(51418);
+        expect(receipt.gasUsed).to.eq(51324);
     });
 
     it('transferFrom', async () => {
