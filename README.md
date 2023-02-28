@@ -6,7 +6,7 @@ The "Wrapped Ether" WETH-9 with additional features through relatively minor cha
 - Supports [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface detection.
 - Supports [ERC-2612](https://eips.ethereum.org/EIPS/eip-2612) signed approvals.
 - Supports [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) contract signature verification.
-- Prevents from sending WETH tokens to the contract.
+- Prevents from burning or sending WETH tokens to the contract.
 
 ## Build
 ```

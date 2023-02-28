@@ -211,7 +211,7 @@ describe('WETH9.1', () => {
 
         const transaction = await weth.transfer(other.address, TEST_AMOUNT2);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(51324);
+        expect(receipt.gasUsed).to.eq(51345);
     });
 
     it('transferFrom', async () => {
@@ -239,13 +239,13 @@ describe('WETH9.1', () => {
 
         let transaction = await weth.connect(other).transferFrom(wallet.address, other.address, TEST_AMOUNT2);
         let receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(52544);
+        expect(receipt.gasUsed).to.eq(52576);
 
         // approve max
         await weth.approve(other.address, MAX_UINT256);
         transaction = await weth.connect(other).transferFrom(wallet.address, other.address, TEST_AMOUNT2);
         receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(37003);
+        expect(receipt.gasUsed).to.eq(37035);
     });
 
     it('approve', async () => {
