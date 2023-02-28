@@ -99,13 +99,13 @@ contract WETH is IWETH {
         emit Deposit(msg.sender, msg.value);
     }
 
-    function withdraw(uint wad) external override {
-        balanceOf[msg.sender] -= wad;
-        (bool success, ) = msg.sender.call{value: wad}("");
+    function withdraw(uint value) external override {
+        balanceOf[msg.sender] -= value;
+        (bool success, ) = msg.sender.call{value: value}("");
         if (!success) {
             revert WETH_ETHTransferFailed();
         }
-        emit Withdrawal(msg.sender, wad);
+        emit Withdrawal(msg.sender, value);
     }
 
     function totalSupply() external view override returns (uint) {
@@ -113,36 +113,32 @@ contract WETH is IWETH {
     }
 
     function approve(address spender, uint value) external override returns (bool) {
-        _approve(msg.sender, spender, value);
+        allowance[msg.sender][spender] = value;
+        emit Approval(msg.sender, spender, value);
         return true;
     }
 
-    function _approve(address owner, address spender, uint value) private {
-        allowance[owner][spender] = value;
-        emit Approval(owner, spender, value);
+    function transfer(address to, uint value) external override returns (bool) {
+        return transferFrom(msg.sender, to, value);
     }
 
-    function transfer(address dst, uint wad) external override returns (bool) {
-        return transferFrom(msg.sender, dst, wad);
-    }
-
-    function transferFrom(address src, address dst, uint wad) public override returns (bool) {
+    function transferFrom(address from, address to, uint value) public override returns (bool) {
         // Prevents from sending WETH tokens to the contract.
-        if (dst == address(0)) {
+        if (to == address(0)) {
             revert WETH_InvalidTransferRecipient();
         }
 
-        if (src != msg.sender) {
-            uint _allowance = allowance[src][msg.sender];
+        if (from != msg.sender) {
+            uint _allowance = allowance[from][msg.sender];
             if (_allowance != type(uint).max) {
-                allowance[src][msg.sender] -= wad;
+                allowance[from][msg.sender] -= value;
             }
         }
 
-        balanceOf[src] -= wad;
-        balanceOf[dst] += wad;
+        balanceOf[from] -= value;
+        balanceOf[to] += value;
 
-        emit Transfer(src, dst, wad);
+        emit Transfer(from, to, value);
         return true;
     }
 
@@ -152,7 +148,8 @@ contract WETH is IWETH {
         if (recoveredAddress != owner || recoveredAddress == address(0)) {
             revert WETH_InvalidSignature();
         }
-        _approve(owner, spender, value);
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
 
     function permit2(address owner, address spender, uint value, uint deadline, bytes calldata signature) external override {
@@ -160,7 +157,8 @@ contract WETH is IWETH {
         if (!_checkSignature(owner, digest, signature)) {
             revert WETH_InvalidSignature();
         }
-        _approve(owner, spender, value);
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
 
     function _permit(address owner, address spender, uint value, uint deadline) private returns (bytes32 digest) {

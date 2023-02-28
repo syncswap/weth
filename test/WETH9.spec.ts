@@ -292,7 +292,7 @@ describe('WETH9.1', () => {
     it('approve:gas', async () => {
         const transaction = await weth.approve(other.address, 10000);
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(46143);
+        expect(receipt.gasUsed).to.eq(46116);
     });
 
     it('permit', async () => {
@@ -343,7 +343,7 @@ describe('WETH9.1', () => {
             wallet.address, other.address, TEST_AMOUNT2, deadline, digest.v, digest.r, digest.s
         );
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(74885);
+        expect(receipt.gasUsed).to.eq(74846);
     });
 
     it('permit2', async () => {
@@ -415,6 +415,6 @@ describe('WETH9.1', () => {
             wallet.address, other.address, TEST_AMOUNT2, deadline, digest
         );
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(75683);
+        expect(receipt.gasUsed).to.eq(75644);
     });
 })
