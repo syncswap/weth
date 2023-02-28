@@ -59,7 +59,7 @@ interface IWETH {
 contract WETH is IWETH {
     string public constant override name = "Wrapped Ether";
     string public constant override symbol = "WETH";
-    uint8 public constant override decimals = 18;
+    uint8 public override decimals = 18;
 
     mapping (address => uint) public override balanceOf;
     mapping (address => mapping (address => uint)) public override allowance;
