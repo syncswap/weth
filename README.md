@@ -3,8 +3,9 @@
 The "Wrapped Ether" WETH-9 with additional features through relatively minor changes.
 
 ## Features
-- Supports [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612) signed approvals.
-- Supports [EIP-1271](https://eips.ethereum.org/EIPS/eip-1271) contract signature verification.
+- Supports [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface detection.
+- Supports [ERC-2612](https://eips.ethereum.org/EIPS/eip-2612) signed approvals.
+- Supports [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) contract signature verification.
 - Prevents from sending WETH tokens to the contract.
 
 ## Build
@@ -17,7 +18,8 @@ This repo is designed for zkSync 2.0 (testnet). To build artifacts for zkSync, r
 
 ## Changelog
 - Upgraded Solidity to `0.8`.
-- Added `DOMAIN_SEPARATOR.`
+- Added `supportsInterface`.
+- Added `DOMAIN_SEPARATOR`.
 - Added `permit` function.
 - Added `permit2` function.
 - Added check for `dst` on `transferFrom`.
