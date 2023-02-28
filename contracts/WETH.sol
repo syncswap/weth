@@ -68,6 +68,14 @@ contract WETH is IWETH {
     bytes4 private constant MAGICVALUE = 0x1626ba7e; // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     mapping(address => uint) public override nonces;
 
+    uint private immutable INITIAL_CHAIN_ID;
+    bytes32 private immutable INITIAL_DOMAIN_SEPARATOR;
+
+    constructor() {
+        INITIAL_CHAIN_ID = block.chainid;
+        INITIAL_DOMAIN_SEPARATOR = _computeDomainSeparator();
+    }
+
     receive() external payable {
         deposit();
     }
@@ -80,6 +88,10 @@ contract WETH is IWETH {
     }
 
     function DOMAIN_SEPARATOR() public view override returns (bytes32) {
+        return block.chainid == INITIAL_CHAIN_ID ? INITIAL_DOMAIN_SEPARATOR : _computeDomainSeparator();
+    }
+
+    function _computeDomainSeparator() private view returns (bytes32) {
         return keccak256(
             abi.encode(
                 // keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")
@@ -171,7 +183,10 @@ contract WETH is IWETH {
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        if (recoveredAddress != owner || recoveredAddress == address(0)) {
+        if (recoveredAddress != owner) {
+            revert WETH_InvalidSignature();
+        }
+        if (recoveredAddress == address(0)) {
             revert WETH_InvalidSignature();
         }
         allowance[owner][spender] = value;
