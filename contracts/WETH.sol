@@ -164,13 +164,6 @@ contract WETH is IWETH {
         return true;
     }
 
-    modifier ensuresDeadline(uint deadline) {
-        if (block.timestamp > deadline) {
-            revert WETH_ExpiredSignature();
-        }
-        _;
-    }
-
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external override {
         if (block.timestamp > deadline) {
             revert WETH_ExpiredSignature();
