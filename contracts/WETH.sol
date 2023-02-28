@@ -213,8 +213,10 @@ contract WETH is IWETH {
 
     function _checkSignature(address signer, bytes32 hash, bytes memory signature) private view returns (bool) {
         (address recoveredAddress) = _recover(hash, signature);
-        if (recoveredAddress == signer && recoveredAddress != address(0)) {
-            return true;
+        if (recoveredAddress == signer) {
+            if (recoveredAddress != address(0)) {
+                return true;
+            }
         }
 
         (bool success, bytes memory result) = signer.staticcall(
@@ -243,10 +245,6 @@ contract WETH is IWETH {
         }
 
         if (uint(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            return address(0);
-        }
-
-        if (v != 27 && v != 28) {
             return address(0);
         }
 

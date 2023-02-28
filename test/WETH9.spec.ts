@@ -415,6 +415,6 @@ describe('WETH9.1', () => {
             wallet.address, other.address, TEST_AMOUNT2, deadline, digest
         );
         const receipt = await transaction.wait();
-        expect(receipt.gasUsed).to.eq(75391);
+        expect(receipt.gasUsed).to.eq(75321);
     });
 })
