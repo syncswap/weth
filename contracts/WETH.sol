@@ -152,8 +152,24 @@ contract WETH is IWETH {
         return true;
     }
 
+    modifier ensuresDeadline(uint deadline) {
+        if (block.timestamp > deadline) {
+            revert WETH_ExpiredSignature();
+        }
+        _;
+    }
+
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external override {
-        bytes32 digest = _permit(owner, spender, value, deadline);
+        if (block.timestamp > deadline) {
+            revert WETH_ExpiredSignature();
+        }
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                '\x19\x01',
+                DOMAIN_SEPARATOR(),
+                keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
+            )
+        );
         address recoveredAddress = ecrecover(digest, v, r, s);
         if (recoveredAddress != owner || recoveredAddress == address(0)) {
             revert WETH_InvalidSignature();
@@ -163,25 +179,21 @@ contract WETH is IWETH {
     }
 
     function permit2(address owner, address spender, uint value, uint deadline, bytes calldata signature) external override {
-        bytes32 digest = _permit(owner, spender, value, deadline);
-        if (!_checkSignature(owner, digest, signature)) {
-            revert WETH_InvalidSignature();
-        }
-        allowance[owner][spender] = value;
-        emit Approval(owner, spender, value);
-    }
-
-    function _permit(address owner, address spender, uint value, uint deadline) private returns (bytes32 digest) {
         if (block.timestamp > deadline) {
             revert WETH_ExpiredSignature();
         }
-        digest = keccak256(
+        bytes32 digest = keccak256(
             abi.encodePacked(
                 '\x19\x01',
                 DOMAIN_SEPARATOR(),
                 keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
             )
         );
+        if (!_checkSignature(owner, digest, signature)) {
+            revert WETH_InvalidSignature();
+        }
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
 
     function _checkSignature(address signer, bytes32 hash, bytes memory signature) private view returns (bool) {
