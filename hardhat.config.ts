@@ -1,6 +1,7 @@
-require("@matterlabs/hardhat-zksync-deploy");
-require("@matterlabs/hardhat-zksync-solc");
-require("@nomiclabs/hardhat-waffle");
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-verify";
+import "@matterlabs/hardhat-zksync-solc";
+import "@nomiclabs/hardhat-waffle";
 
 module.exports = {
   // hardhat-zksync-solc
@@ -11,14 +12,6 @@ module.exports = {
     settings: {
       compilerPath: "./zksolc-linux-amd64-musl-v1.3.5",
     },
-  },
-
-  // hardhat-zksync-deploy
-  // Run `deploy-zksync` task to deploy zkSync artifacts into following network.
-  // Note that it will use `artifacts` instead of `artifacts-zk`.
-  zkSyncDeploy: {
-    zkSyncNetwork: "https://zksync2-testnet.zksync.dev",
-    ethNetwork: "goerli",
   },
 
   // The compiler configuration for normal artifacts.
@@ -42,8 +35,6 @@ module.exports = {
   // tests
   defaultNetwork: 'hardhat',
   networks: {
-    // Run compile task with this network to generate normal artifacts.
-    // Example: `yarn hardhat compile --network hardhat`
     hardhat: {
       chainId: 280,
       gasMultiplier: 0,
@@ -55,13 +46,17 @@ module.exports = {
       url: "https://rpc.ankr.com/eth_goerli"
     },
 
-    // Run compile task with this network to generate `artifacts-zk` and `cache-zk`.
-    // Example: `yarn hardhat compile --network zksync`
     zkTestnet: {
       zksync: true,
+
+      // URL of the Ethereum Web3 RPC, or the identifier of the network (e.g. `mainnet` or `goerli`)
       ethNetwork: "goerli",
+
+      // URL of the zkSync network RPC
       url: 'https://zksync2-testnet.zksync.dev',
-      chainId: 280
+
+      // Verification endpoint for Goerli
+      verifyURL: 'https://testnet-explorer.zksync.dev/contract_verification'
     },
   },
   mocha: {
