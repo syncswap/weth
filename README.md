@@ -2,6 +2,11 @@
 
 The "Wrapped Ether" WETH-9 with additional features through relatively minor changes.
 
+## Deployments
+zkSync Era Testnet `0x20b28B1e4665FFf290650586ad76E977EAb90c5D`
+
+[zkSync Era Mainnet](https://explorer.zksync.io/address/0x8Ebe4A94740515945ad826238Fc4D56c6B8b0e60#contract) `0x8Ebe4A94740515945ad826238Fc4D56c6B8b0e60`
+
 ## Features
 - Supports [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface detection.
 - Supports [ERC-2612](https://eips.ethereum.org/EIPS/eip-2612) signed approvals.

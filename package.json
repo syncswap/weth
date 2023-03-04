@@ -33,7 +33,8 @@
   "scripts": {
     "build": "yarn hardhat compile",
     "build-zk": "yarn hardhat compile --network zkTestnet",
-    "deploy-zk": "yarn hardhat deploy-zksync --script 001_deploy.ts --network zkTestnet",
+    "deploy-testnet": "yarn hardhat deploy-zksync --script 001_deploy.ts --network zkTestnet",
+    "deploy-mainnet": "yarn hardhat deploy-zksync --script 001_deploy.ts --network zkMainnet",
     "test": "yarn hardhat test"
   },
   "license": "AGPL-3.0-or-later"

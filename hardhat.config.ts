@@ -46,6 +46,10 @@ module.exports = {
       url: "https://rpc.ankr.com/eth_goerli"
     },
 
+    mainnet: {
+      url: "https://eth.llamarpc.com"
+    },
+
     zkTestnet: {
       zksync: true,
 
@@ -57,6 +61,19 @@ module.exports = {
 
       // Verification endpoint for Goerli
       verifyURL: 'https://testnet-explorer.zksync.dev/contract_verification'
+    },
+
+    zkMainnet: {
+      zksync: true,
+
+      // URL of the Ethereum Web3 RPC, or the identifier of the network (e.g. `mainnet` or `goerli`)
+      ethNetwork: "mainnet",
+
+      // URL of the zkSync network RPC
+      url: 'https://zksync2-mainnet.zksync.io',
+
+      // Verification endpoint for Goerli
+      verifyURL: 'https://explorer.zksync.io/contract_verification'
     },
   },
   mocha: {
