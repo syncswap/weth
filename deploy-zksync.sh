@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function bashcolor {
-    if [ $2 ]; then
+    if [ "$2" ]; then
         echo -e "\e[$1;$2m"
     else
         echo -e "\e[$1m"
@@ -23,14 +23,14 @@ if [[ "$1" != "--skipCompile" ]]; then
     echo "  "
 
     if [ -d "./artifacts-zk" ]; then
-        rm -rf ./artifacts-zk
+        rm -rf "./artifacts-zk"
     fi
     if [ -d "./cache-zk" ]; then
-        rm -rf ./cache-zk
+        rm -rf "./cache-zk"
     fi
 
     yarn hardhat compile --network zkTestnet
-  else
+else
     skippedCompile=1
     echo "  "
     echo "  //////////////////////////////////////////////////"
@@ -58,10 +58,10 @@ echo "  //////////////////////////////////////////////////"
 
 script=""
 if [[ "$skippedCompile" == 0 && "$1" ]]; then
-    script=$1
-  else
+    script="$1"
+else
     if [[ "$skippedCompile" == 1 && "$2" ]]; then
-      script=$2
+        script="$2"
     fi
 fi
 
@@ -69,7 +69,7 @@ if [[ ! -z "$script" ]]; then
     echo "  Use deploy script: $script"
     echo "  "
     yarn hardhat deploy-zksync --script "$script".ts --network zkTestnet
-  else
+else
     echo "  Use all deploy scripts."
     echo "  "
     yarn hardhat deploy-zksync --network zkTestnet
